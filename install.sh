@@ -5,7 +5,7 @@ APP_NAME="loggr"
 INSTALL_DIR="/usr/local/bin" DATA_DIR="$HOME/.local/share/$APP_NAME"
 
 REPO_URL="https://github.com/user-forty-seven/loggr.git"
-REPO_DIR="$(mktemp -d loggr_XXXX)"
+REPO_DIR="$(mktemp -d /tmp/loggr_XXXXX)"
 
 # colors
 RED='\033[0;31m'
