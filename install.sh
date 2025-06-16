@@ -2,8 +2,7 @@
 
 set -e
 APP_NAME="loggr"
-INSTALL_DIR="/usr/local/bin"
-DATA_DIR="$HOME/.local/share/$APP_NAME"
+INSTALL_DIR="/usr/local/bin" DATA_DIR="$HOME/.local/share/$APP_NAME"
 
 REPO_URL="https://github.com/user-forty-seven/loggr.git"
 REPO_DIR="/tmp/loggr"
@@ -90,7 +89,7 @@ main() {
     # install the binary
     echo -e "${BLUE}Installing to $INSTALL_DIR. Please allow sudo permissions${NC}"
     sudo true
-    sudo cp "bin/$APP_NAME" "$INSTALL_DIR/"
+    sudo make install
     sudo chmod +x "$INSTALL_DIR/$APP_NAME"
     
     # make room for data
