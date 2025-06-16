@@ -7,14 +7,14 @@
 You can install `loggr` via this command:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/user-forty-seven/loggr/main/install.sh)
+bash <(curl -s https://raw.githubusercontent.com/user-forty-seven/loggr/refs/heads/main/install.sh)
 ```
 
 ## Uninstallation:
 Similar to the installation part, you can uninstall `loggr` via this command:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/user-forty-seven/loggr/main/uninstall.sh)
+bash <(curl -s https://raw.githubusercontent.com/user-forty-seven/loggr/refs/heads/main/uninstall.sh)
 ```
 
 ### Building the project
