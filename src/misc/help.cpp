@@ -39,6 +39,6 @@ void help::full_help() {
     << std::left << std::setw(WIDTH) << "  loggr list tasks" << '\n'
     << std::left << std::setw(WIDTH) << "  loggr mark task 1" << '\n'
     << std::left << std::setw(WIDTH) << "  loggr clear tasks completed" << '\n'
-    << std::left << std::setw(WIDTH) << "  loggr delete task 4" << "\n\n";
+    << std::left << std::setw(WIDTH) << "  loggr remove task 4" << "\n\n";
     
 }
