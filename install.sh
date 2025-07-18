@@ -30,7 +30,7 @@ install_nlohmann() {
     if command -v apt &>/dev/null; then
         sudo apt install -y nlohmann-json3-dev
     elif command -v dnf &>/dev/null; then
-        sudo dnf install -y nlohmann-json-devel
+        sudo dnf install -y json-devel
     elif command -v pacman &>/dev/null; then
         sudo pacman -S --noconfirm nlohmann-json
     elif command -v zypper &>/dev/null; then

@@ -55,7 +55,7 @@ if [[ "$response" == "y" ]]; then
     if command -v apt &>/dev/null; then
         sudo apt remove -y nlohmann-json3-dev
     elif command -v dnf &>/dev/null; then
-        sudo dnf remove -y nlohmann-json-devel
+        sudo dnf remove -y json-devel
     elif command -v pacman &>/dev/null; then
         sudo pacman -R --noconfirm nlohmann-json
     elif command -v zypper &>/dev/null; then
