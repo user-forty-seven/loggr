@@ -1,60 +1,80 @@
 #include "utils/utils.hpp"
 #include "core/models.hpp"
+#include "errors/errors.hpp"
 
-#include <iostream>
-#include <iomanip>
-#include <string>
+#include <algorithm>
+#include <array>
+#include <chrono>
 #include <cstdlib> // for getenv
 #include <filesystem>
-#include <algorithm>
-#include <chrono>
-#include <array>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
 std::string utils::get_data_path() {
-    const char* home = std::getenv("HOME"); 
+    const char* xdg_data_home = std::getenv("XDG_DATA_HOME");
+    const char* home = std::getenv("HOME");
     std::filesystem::path data_path;
-    if (home) {
+
+    if (xdg_data_home) {
+        data_path = std::filesystem::path(xdg_data_home) / "loggr" / "data";
+    } else if (home) {
         data_path = std::filesystem::path(home) / ".local" / "share" / "loggr" / "data";
-        std::filesystem::create_directories(data_path);
+    } else {
+        throw errors::DataError(
+            "Cannot determine data directory: $HOME or $XDG_DATA_HOME not set.");
+    }
+
+    try {
         if (!std::filesystem::exists(data_path)) {
-            throw std::runtime_error("Unable to set the data directory");
+            std::filesystem::create_directories(data_path);
         }
+        if (!std::filesystem::exists(data_path)) {
+            throw std::runtime_error("Unknown error while creating data directory.");
+        }
+    } catch (const std::filesystem::filesystem_error& e) {
+        throw errors::DataError(
+            "Failed to create the data directory at: " + data_path.string() +
+            "\nReason: " + std::string(e.what()) +
+            "\nMake sure you have write permissions, and that no file is "
+            "blocking the directory structure.");
     }
-    else {
-        throw std::runtime_error("Unable to get the HOME environment variable, are you sure its correct?");
-    }
+
     return (data_path / "data.json").string();
 }
 
-void utils::normalize_whitespaces(std::string& s) {
-    auto begin_it = std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isspace(c); }); // find the first non space character from the beginning
+void utils::normalize_whitespaces(std::string &s) {
+  auto begin_it = std::find_if(s.begin(), s.end(), [](unsigned char c) {
+    return !std::isspace(c);
+  }); // find the first non space character from the beginning
 
-    auto end_it = std::find_if(s.rbegin(), s.rend(), [](unsigned char c) { return !std::isspace(c); }).base(); // find the first non space character from the end
+  auto end_it = std::find_if(s.rbegin(), s.rend(), [](unsigned char c) {
+                  return !std::isspace(c);
+                }).base(); // find the first non space character from the end
 
-    if (begin_it >= end_it) { // this means that is string is empty
-        s.clear();
-        return;
+  if (begin_it >= end_it) { // this means that is string is empty
+    s.clear();
+    return;
+  }
+
+  // create trimmed string
+  std::string trimmed(begin_it, end_it);
+
+  // now collapse multiple spaces into a single space
+  std::string result;
+  bool in_space = false;
+
+  for (char ch : trimmed) {
+    if (std::isspace(ch) && !in_space) {
+      result.push_back(' ');
+      in_space = true; // we are now in a space
+    } else if (!std::isspace(ch)) {
+      result.push_back(ch);
+      in_space = false; // we are no longer in the space
     }
+  }
 
-    // create trimmed string
-    std::string trimmed(begin_it, end_it);
-
-    // now collapse multiple spaces into a single space
-    std::string result; 
-    bool in_space = false;
-
-    for(char ch: trimmed) {
-        if (std::isspace(ch) && !in_space) {
-            result.push_back(' ');
-            in_space = true; // we are now in a space
-        }
-        else if (!std::isspace(ch)){
-            result.push_back(ch);
-            in_space = false; // we are no longer in the space
-        }
-    }
-
-    s = std::move(result); // assign the result to the orginal string
+  s = std::move(result); // assign the result to the orginal string
 }
 
 models::Time utils::get_current_time() {
@@ -70,13 +90,12 @@ models::Time utils::get_current_time() {
 
   // a vector to hold the month names
   const std::array<std::string, 12> month_names = {
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  };
+      "January", "February", "March",     "April",   "May",      "June",
+      "July",    "August",   "September", "October", "November", "December"};
 
   // extract the individual components
   time.year = now_tm.tm_year + 1900; // since tm_year is years since 1900
-  time.month = now_tm.tm_mon + 1; // since tm_mon is 0..11
+  time.month = now_tm.tm_mon + 1;    // since tm_mon is 0..11
   time.month_name = month_names[now_tm.tm_mon];
   time.day = now_tm.tm_mday;
   time.hour = now_tm.tm_hour;
@@ -86,27 +105,28 @@ models::Time utils::get_current_time() {
   return time;
 }
 
-void utils::print_tokens (const token::Command& cmd) {
+void utils::print_tokens(const token::Command &cmd) {
   std::cout << std::left;
-  std::cout << std::setw(10) << "TYPE"     << ": " << token::action_map_reverse.at(cmd.type) << '\n';
-  std::cout << std::setw(10) << "SUBTYPE"  << ": " << token::subaction_map_reverse.at(cmd.subtype) << '\n';
+  std::cout << std::setw(10) << "TYPE" << ": "
+            << token::action_map_reverse.at(cmd.type) << '\n';
+  std::cout << std::setw(10) << "SUBTYPE" << ": "
+            << token::subaction_map_reverse.at(cmd.subtype) << '\n';
 
   if (cmd.arguments.size() == 0) {
     std::cout << std::setw(10) << "ARGUMENTS" << ": " << "none" << std::endl;
-  }
-  else {
+  } else {
     std::cout << std::setw(10) << "ARGUMENTS" << ":\n";
     std::cout << "  # | " << std::setw(7) << "TYPE" << " | VALUE\n";
     std::cout << " ---+--------+----------------\n";
     for (size_t i = 0; i < cmd.arguments.size(); ++i) {
-        std::cout << ' ' << std::setw(2) << i + 1 << " | ";
-        if (cmd.arguments[i].type == token::ArgType::INT) {
-            std::cout << std::setw(7) << "int" << " | "
-                      << std::get<int>(cmd.arguments[i].value) << '\n';
-        } else if (cmd.arguments[i].type == token::ArgType::STRING) {
-            std::cout << std::setw(7) << "string" << " | "
-                      << std::get<std::string>(cmd.arguments[i].value) << '\n';
-        }
+      std::cout << ' ' << std::setw(2) << i + 1 << " | ";
+      if (cmd.arguments[i].type == token::ArgType::INT) {
+        std::cout << std::setw(7) << "int" << " | "
+                  << std::get<int>(cmd.arguments[i].value) << '\n';
+      } else if (cmd.arguments[i].type == token::ArgType::STRING) {
+        std::cout << std::setw(7) << "string" << " | "
+                  << std::get<std::string>(cmd.arguments[i].value) << '\n';
+      }
     }
   }
 }

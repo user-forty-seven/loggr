@@ -26,7 +26,6 @@ int main (int argc, char* argv[]) {
     std::cerr << e.full_message() << std::endl;
     return 1;
   }
-
   try {
     dispatcher::dispatch(parsed_cmd);
   }
@@ -46,7 +45,6 @@ int main (int argc, char* argv[]) {
     std::cerr << e.what() << std::endl;
     return 1;
   }
-
   // loggr <command> [subcommand] [args...]
   return 0;
 } 
